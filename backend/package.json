@@ -1,0 +1,32 @@
+{
+  "name": "imaginify-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "npm run build-frontend",
+    "build-frontend": "cd ../frontend && npm install && npm run build && cp -r dist ../backend/public",
+    "postbuild": "echo 'Frontend build copied to backend/public'"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "@clerk/clerk-sdk-node": "^5.1.6",
+    "cloudinary": "^1.40.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.10.0",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.0.0",
+    "mongoose": "^7.5.2",
+    "multer": "^2.0.2",
+    "path": "^0.12.7",
+    "qs": "^6.11.2",
+    "stripe": "^13.6.0",
+    "svix": "^1.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
