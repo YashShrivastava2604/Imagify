@@ -1,0 +1,22 @@
+{
+  "name": "imaginify-mern",
+  "version": "1.0.0",
+  "description": "Full-stack AI SaaS platform for image transformations",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "npm run start --prefix backend",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend && cp -r frontend/dist backend/public",
+    "build:frontend": "npm install --prefix frontend && npm run build --prefix frontend",
+    "build:backend": "npm install --prefix backend",
+    "deploy": "npm run build && npm run start --prefix backend",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "clean": "rm -rf backend/public && rm -rf frontend/dist && rm -rf */node_modules"
+  },
+  "keywords": ["ai", "saas", "image-processing", "mern", "react", "express"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

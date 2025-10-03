@@ -32,8 +32,8 @@ app.use(helmet({
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100
 });
 app.use(limiter);
 
@@ -72,19 +72,32 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve static files from frontend build in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
-  // Express 5.x: use an explicit regex for catch-all
-  app.get(/(.*)/, (req, res) => {
-    // `req.params[0]` will contain the path
-    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the public directory
+  app.use(express.static(path.join(__dirname, 'public')));
+  
+  // Handle React Router - serve index.html for all non-API routes
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'API route not found' });
+    }
+    
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
-
+} else {
+  app.get('/', (req, res) => {
+    res.json({ 
+      message: 'Imaginify API Server', 
+      docs: '/api/health',
+      frontend: process.env.FRONTEND_URL || 'http://localhost:5173'
+    });
+  });
 }
+
 // Error handling middleware
 app.use(errorHandler);
 
-// 404 handler for API routes only
+// 404 handler for API routes
 app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'API route not found' });
 });
