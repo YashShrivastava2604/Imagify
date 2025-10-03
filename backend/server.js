@@ -72,30 +72,15 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve static files from frontend build in production
-if (process.env.NODE_ENV === 'production') {
-  // Serve static files
-  app.use(express.static(path.join(__dirname, 'public')));
-  
-  // Handle React Router - serve index.html for all non-API routes
-  app.get('*', (req, res) => {
-    // Don't serve index.html for API routes
-    if (req.path.startsWith('/api/')) {
-      return res.status(404).json({ error: 'API route not found' });
-    }
-    
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  // Express 5.x: use an explicit regex for catch-all
+  app.get(/(.*)/, (req, res) => {
+    // `req.params[0]` will contain the path
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
   });
-} else {
-  // Development mode - API only
-  app.get('/', (req, res) => {
-    res.json({ 
-      message: 'Imaginify API Server', 
-      docs: '/api/health',
-      frontend: process.env.FRONTEND_URL || 'http://localhost:5173'
-    });
-  });
-}
 
+}
 // Error handling middleware
 app.use(errorHandler);
 
