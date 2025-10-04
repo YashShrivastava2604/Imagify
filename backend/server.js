@@ -18,16 +18,17 @@ const app = express();
 
 // Security middleware
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      connectSrc: ["'self'", "https:", "http:"],
-    },
-  },
+  // contentSecurityPolicy: {
+  //   directives: {
+  //     defaultSrc: ["'self'"],
+  //     styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+  //     fontSrc: ["'self'", "https://fonts.gstatic.com"],
+  //     imgSrc: ["'self'", "data:", "https:", "http:"],
+  //     scriptSrc: ["'self'", "'unsafe-inline'"],
+  //     connectSrc: ["'self'", "https:", "http:"],
+  //   },
+// },
+  contentSecurityPolicy:false
 }));
 
 // Rate limiting
@@ -47,6 +48,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Body parsing middleware
+app.use('/api/webhooks', webhookRoutes);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -58,7 +60,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/transformations', transformationRoutes);
-app.use('/api/webhooks', webhookRoutes);
 app.use('/api/transactions', transactionRoutes);
 
 // Health check endpoint

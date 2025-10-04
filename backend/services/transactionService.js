@@ -39,25 +39,30 @@ const checkoutCredits = async (transaction) => {
   }
 };
 
-const createTransaction = async (transaction) => {
+async function createTransaction({ stripeId, amount, plan, credits, buyerId }) {
   try {
-    await connectToDatabase();
-
-    // Create a new transaction with a buyerId
-    const newTransaction = await Transaction.create({
-      ...transaction,
-      buyer: transaction.buyerId,
+    // Create transaction document
+    const transaction = await Transaction.create({
+      stripeId,
+      amount,
+      plan,
+      credits,
+      buyerId
     });
 
-    await updateCredits(transaction.buyerId, transaction.credits);
+    // Increase the user’s credit balance
+    await User.findOneAndUpdate(
+      { clerkId: buyerId },
+      { $inc: { creditBalance: credits } },
+      { new: true }
+    );
 
-    return JSON.parse(JSON.stringify(newTransaction));
+    return transaction;
   } catch (error) {
     handleError(error);
   }
-};
+}
 
 module.exports = {
-  checkoutCredits,
-  createTransaction,
+  createTransaction
 };

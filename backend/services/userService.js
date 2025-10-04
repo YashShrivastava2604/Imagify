@@ -58,12 +58,12 @@ const deleteUser = async (clerkId) => {
   }
 };
 
-// USE CREDITS
-const updateCredits = async (userId, creditFee) => {
+// USE CREDITS - **FIXED TO USE clerkId INSTEAD OF _id**
+const updateCredits = async (clerkId, creditFee) => {
   try {
     await connectToDatabase();
     const updatedUserCredits = await User.findOneAndUpdate(
-      { _id: userId },
+      { clerkId: clerkId }, // CHANGED: Use clerkId instead of _id
       { $inc: { creditBalance: creditFee } },
       { new: true }
     );
