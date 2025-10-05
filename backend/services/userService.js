@@ -4,12 +4,28 @@ const { handleError } = require('../utils/helpers');
 
 // CREATE
 const createUser = async (user) => {
+  console.log('🔧 ========== USER SERVICE CREATE START ==========');
+  console.log('📋 User data received:', JSON.stringify(user, null, 2));
+  
   try {
     await connectToDatabase();
+    console.log('✅ Database connection established');
+    
+    console.log('📝 Attempting User.create...');
     const newUser = await User.create(user);
-    return JSON.parse(JSON.stringify(newUser));
+    console.log('✅ User.create successful:', newUser._id);
+    
+    const result = JSON.parse(JSON.stringify(newUser));
+    console.log('✅ User service create completed');
+    console.log('🔧 ========== USER SERVICE CREATE END ==========');
+    return result;
   } catch (error) {
+    console.error('❌ ========== USER SERVICE ERROR ==========');
+    console.error('❌ User service error:', error.message);
+    console.error('❌ Error details:', error);
+    console.log('❌ ========== USER SERVICE ERROR END ==========');
     handleError(error);
+    throw error;
   }
 };
 
@@ -23,6 +39,7 @@ const getUserById = async (userId) => {
     return JSON.parse(JSON.stringify(user));
   } catch (error) {
     handleError(error);
+    throw error;
   }
 };
 
@@ -36,6 +53,7 @@ const updateUser = async (clerkId, user) => {
     return JSON.parse(JSON.stringify(updatedUser));
   } catch (error) {
     handleError(error);
+    throw error;
   }
 };
 
@@ -55,6 +73,7 @@ const deleteUser = async (clerkId) => {
     return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
   } catch (error) {
     handleError(error);
+    throw error;
   }
 };
 
@@ -72,6 +91,7 @@ const updateCredits = async (clerkId, creditFee) => {
     return JSON.parse(JSON.stringify(updatedUserCredits));
   } catch (error) {
     handleError(error);
+    throw error;
   }
 };
 

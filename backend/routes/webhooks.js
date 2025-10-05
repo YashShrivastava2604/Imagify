@@ -10,6 +10,10 @@ const router = express.Router();
 // CLERK WEBHOOK - User Management
 // ============================================================================
 router.post('/clerk', express.raw({type: 'application/json'}), async (req, res) => {
+  console.log('🎯 ===========================================');
+  console.log('🔔 Clerk webhook endpoint hit!');
+  console.log('📅 Timestamp:', new Date().toISOString());
+  
   try {
     const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
     
@@ -18,10 +22,17 @@ router.post('/clerk', express.raw({type: 'application/json'}), async (req, res) 
       return res.status(500).json({ error: 'Webhook secret not configured' });
     }
 
+    console.log('✅ Webhook secret found:', WEBHOOK_SECRET ? 'YES' : 'NO');
+
     // Get Svix headers
     const svix_id = req.headers['svix-id'];
     const svix_timestamp = req.headers['svix-timestamp'];
     const svix_signature = req.headers['svix-signature'];
+
+    console.log('📋 Svix Headers:');
+    console.log('  svix-id:', svix_id);
+    console.log('  svix-timestamp:', svix_timestamp);
+    console.log('  svix-signature:', svix_signature ? 'Present' : 'Missing');
 
     if (!svix_id || !svix_timestamp || !svix_signature) {
       console.error('❌ Missing Svix headers');
@@ -30,6 +41,9 @@ router.post('/clerk', express.raw({type: 'application/json'}), async (req, res) 
 
     // Verify webhook
     const body = req.body.toString();
+    console.log('📄 Raw body length:', body.length);
+    console.log('📄 Raw body preview:', body.substring(0, 200) + '...');
+    
     const wh = new Webhook(WEBHOOK_SECRET);
     let evt;
 
@@ -39,6 +53,7 @@ router.post('/clerk', express.raw({type: 'application/json'}), async (req, res) 
         'svix-timestamp': svix_timestamp,
         'svix-signature': svix_signature,
       });
+      console.log('✅ Webhook verification successful');
     } catch (err) {
       console.error('❌ Webhook verification failed:', err.message);
       return res.status(400).json({ error: 'Webhook verification failed' });
@@ -47,19 +62,25 @@ router.post('/clerk', express.raw({type: 'application/json'}), async (req, res) 
     const { id } = evt.data;
     const eventType = evt.type;
     
-    console.log(`📨 Clerk webhook received: ${eventType} for user ${id}`);
+    console.log('🎉 Webhook Event Details:');
+    console.log('  Event Type:', eventType);
+    console.log('  User ID:', id);
+    console.log('  Full Event Data:', JSON.stringify(evt.data, null, 2));
 
     // Handle different event types
     switch (eventType) {
       case 'user.created':
+        console.log('👤 Handling user.created event');
         await handleUserCreated(evt.data);
         break;
       
       case 'user.updated':
+        console.log('✏️ Handling user.updated event');
         await handleUserUpdated(evt.data);
         break;
       
       case 'user.deleted':
+        console.log('🗑️ Handling user.deleted event');
         await handleUserDeleted(evt.data);
         break;
       
@@ -67,10 +88,14 @@ router.post('/clerk', express.raw({type: 'application/json'}), async (req, res) 
         console.log(`⚠️ Unhandled Clerk event: ${eventType}`);
     }
 
+    console.log('✅ Webhook processed successfully');
+    console.log('🎯 ===========================================');
     return res.status(200).json({ message: 'Webhook processed successfully' });
 
   } catch (error) {
     console.error('❌ Clerk webhook error:', error);
+    console.error('❌ Stack trace:', error.stack);
+    console.log('🎯 ===========================================');
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -131,25 +156,62 @@ router.post('/stripe', express.raw({type: 'application/json'}), async (req, res)
 // ============================================================================
 
 async function handleUserCreated(userData) {
+  console.log('👤 ========== USER CREATION START ==========');
+  console.log('📋 Raw userData received:', JSON.stringify(userData, null, 2));
+  
   try {
     const { id, email_addresses, image_url, first_name, last_name, username } = userData;
 
-    const newUser = new User({
+    console.log('🔍 Extracted fields:');
+    console.log('  id:', id);
+    console.log('  email_addresses:', email_addresses);
+    console.log('  image_url:', image_url);
+    console.log('  first_name:', first_name);
+    console.log('  last_name:', last_name);
+    console.log('  username:', username);
+
+    // Check email availability
+    if (!email_addresses || !email_addresses.length) {
+      console.error('❌ No email_addresses array found');
+      throw new Error('No email addresses provided');
+    }
+
+    if (!email_addresses[0] || !email_addresses[0].email_address) {
+      console.error('❌ No email_address in first email object');
+      console.error('❌ First email object:', email_addresses[0]);
+      throw new Error('Email address missing from first email object');
+    }
+
+    const email = email_addresses[0].email_address;
+    console.log('✅ Email extracted:', email);
+
+    const newUserData = {
       clerkId: id,
-      email: email_addresses[0]?.email_address,
+      email: email,
       username: username || null,
       firstName: first_name || '',
       lastName: last_name || '',
       photo: image_url || '',
-      creditBalance: 10, // Free credits for new users
-      planId: 1, // Free plan
-    });
+      creditBalance: 10,
+      planId: 1,
+    };
 
-    await newUser.save();
-    console.log(`✅ User created in database: ${id}`);
+    console.log('🏗️ Creating user with data:', JSON.stringify(newUserData, null, 2));
+
+    const newUser = new User(newUserData);
+    console.log('📝 User model created, attempting save...');
+    
+    const savedUser = await newUser.save();
+    console.log('✅ User saved successfully:', savedUser._id);
+    console.log('✅ User created in database:', id);
+    console.log('👤 ========== USER CREATION END ==========');
     
   } catch (error) {
-    console.error('❌ Error creating user:', error);
+    console.error('❌ ========== USER CREATION ERROR ==========');
+    console.error('❌ Error creating user:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ MongoDB validation errors:', error.errors);
+    console.log('❌ ========== USER CREATION ERROR END ==========');
     throw error;
   }
 }

@@ -47,13 +47,18 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Body parsing middleware
-app.use('/api/webhooks', webhookRoutes);
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
 // Connect to database
 connectToDatabase();
+console.log('🔌 Attempting MongoDB connection...');
+console.log('🔌 MongoDB URL:', process.env.MONGODB_URL ? 'Set' : 'Not set');
+
+// Webhook routes MUST come before body parsing middleware
+app.use('/api/webhooks', webhookRoutes);
+console.log('🔗 Webhook routes mounted at /api/webhooks');
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
