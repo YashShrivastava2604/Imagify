@@ -18,16 +18,16 @@ const app = express();
 
 // Security middleware
 app.use(helmet({
-  // contentSecurityPolicy: {
-  //   directives: {
-  //     defaultSrc: ["'self'"],
-  //     styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-  //     fontSrc: ["'self'", "https://fonts.gstatic.com"],
-  //     imgSrc: ["'self'", "data:", "https:", "http:"],
-  //     scriptSrc: ["'self'", "'unsafe-inline'"],
-  //     connectSrc: ["'self'", "https:", "http:"],
-  //   },
-// },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      connectSrc: ["'self'", "https:", "http:"],
+    },
+},
   contentSecurityPolicy:false
 }));
 
